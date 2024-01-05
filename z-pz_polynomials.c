@@ -72,9 +72,8 @@ int main (void) {
     int pa[D], pb[D];
     int m, z, paz, pbz;
     int psum[D], pdif[D], pmul[D], pprd[D], pquo[D], prem[D];
-    int psumz;
-    int test_result;
-
+    int psumz, pdifz, pmulz, pprdz, pquoz, premz;
+    int pbquo[D], pbquoplusrem[D], paminuspbquoplusrem[D]; /* for division test */
 
     printf("Mod? (<=%d): ", P_MAX);
     scanf(" %d", &p);
@@ -123,73 +122,109 @@ int main (void) {
     write_coef_poly(pb);
  
     /* sum */
-    sum_poly(pa, pb, psum);
     printf("Sum a+b\n");
+    sum_poly(pa, pb, psum);
     printf("%-8s", "a+b:");
     write_coef_poly(psum);
 
     /* difference */
-    dif_poly(pa, pb, pdif);
     printf("Difference a-b\n");
+    dif_poly(pa, pb, pdif);
     printf("%-8s", "a-b:");
     write_coef_poly(pdif);
 
     /* multiplication by a number*/
-    mul_poly(m, pa, pmul);
     printf("Multiplication\n");
+    mul_poly(m, pa, pmul); 
     printf("%-8s", "m*a:");
     write_coef_poly(pmul);
 
     /* product */
-    prd_poly(pa, pb, pprd);
     printf("Product a*b\n");
+    prd_poly(pa, pb, pprd);
     printf("%-8s", "a*b:");
     write_coef_poly(pprd);
 
     /* Euclidean division */
-    div_poly(pa, pb, pquo, prem);
     printf("Euclidean division a= q*b + r\n");
+    div_poly(pa, pb, pquo, prem);
     printf("%-8s", "a/b:");
     write_coef_poly(pquo);
+    printf("%-8s", "a%b:");
+    write_coef_poly(prem);
 
 
     /* Tests by Evaluation*/
-
     puts ("\nTests by evaluation");
-    puts (" z a(z) b(z) - sum - dif - mul - prd - div ");
-    test_result=1;
+    puts (" z   a(z) b(z)  -  sum  -  dif  -  mul  -  prd  -  div  ");
     for (z=0; z<p; z++) {
         paz = eval_poly(pa, z);
         pbz = eval_poly(pb, z);
-        printf("%2i %2i %2i", z, paz, pbz);
+        printf("%2i %4i %4i", z, paz, pbz);
        
         /* Test sum */
         psumz = eval_poly(psum, z);
-
         if (sum[paz][pbz]==psumz) {
-            printf(" - %2i= %2i" , sum[paz][pbz], psumz);
+            printf("    -%3i=%-3i" , sum[paz][pbz], psumz);
         } else {
-            printf(" - %2i!=%2i", sum[paz][pbz], psumz);
-            test_result=0;
+            printf("    -%3i!=%-2i", sum[paz][pbz], psumz);
         }
 
         /* Test difference */
-        /***/
+        pdifz = eval_poly(pdif, z);
+        if (dif[paz][pbz]==pdifz) {
+            printf("-%3i=%-3i" , dif[paz][pbz], pdifz);
+        } else {
+            printf("-%3i!=%-2i", dif[paz][pbz], pdifz);
+        }
+
         /* Test multiplication by a number*/
-        /***/
+        pmulz = eval_poly(pmul, z);
+        if (prd[m][paz]==pmulz) {
+            printf("-%3i=%-3i" , prd[m][paz], pmulz);
+        } else {
+            printf("-%3i!=%-2i", prd[m][paz], pmulz); 
+        }
+        
         /* Test product */
-        /***/
+        pprdz = eval_poly(pprd, z);
+        if (prd[paz][pbz]==pprdz) {
+            printf("-%3i=%-3i" , prd[paz][pbz], pprdz);
+        } else {
+            printf("-%3i!=%-2i", prd[paz][pbz], pprdz);
+        }
+
         /* Test Euclidean division */
-        /***/
+        pquoz = eval_poly(pquo, z);
+        premz = eval_poly(prem, z);
+        if (sum [prd[pquoz][pbz]] [premz] == paz) {
+            printf("-%3i=%-3i" , paz, sum [prd[pquoz][pbz]] [premz]);
+        } else {
+            printf("-%3i!=%-2i", paz, sum [prd[pquoz][pbz]] [premz]); 
+        }
 
         printf ("\n");
     }
 
-    if(test_result) {
-        printf("Test OK\n");
+
+    /* Test of Euclidean division */
+    puts("\nTest of Euclidean division");
+    prd_poly(pb, pquo, pbquo);
+    sum_poly(pbquo, prem, pbquoplusrem);
+    dif_poly(pa, pbquoplusrem, paminuspbquoplusrem);
+
+    printf("%-8s", "a:");
+    write_coef_poly(pa);
+    printf("%-8s", "q*b+r:");
+    write_coef_poly(pbquoplusrem);
+
+    if(paminuspbquoplusrem[DEG]==-1) {
+        puts("Test OK");
     } else {
-        printf("Test not OK\n");
+        puts("Test not OK");
     }
+
+    puts("");
 
     return 0;
 }
@@ -247,7 +282,7 @@ void zpz_arithmetics (int p) {
     /* Difference table */
     for(i=0; i<p; i++) {
         for(j=0; j<p; j++) {
-            dif[i][j]=(j+ (p-i) )%p;
+            dif[i][j]=(i + (p-j) )%p;
         }
     }
    
@@ -266,9 +301,8 @@ void zpz_arithmetics (int p) {
 }
 
 int mod(int z, int p) {
-    /* Watch out %! */
     if(z < 0) {
-        z=p+z;
+        return p-((-z)%p);
     }
     return z%p;
 }
@@ -281,7 +315,6 @@ int read_coef_poly(int pf[D]) {
     scanf(" %d", &pf[DEG]);
 
     printf("Type the coefficients: ");
-    /* Watch out degree n is lower or equal than N_MAX. */
     if(pf[DEG] > N_MAX) {
         printf("The degree is greater than the maximum (%d).\n", N_MAX);
         return 0;
@@ -292,7 +325,6 @@ int read_coef_poly(int pf[D]) {
         pf[DEG]=-1;
     }
 
-    /* Return 1 if successful reading, 0 otherwise */
     for(i=0; i<pf[DEG]+1; i++) {
         scanf(" %d", &pf[i]);
     }
@@ -302,7 +334,7 @@ int read_coef_poly(int pf[D]) {
 
 void write_coef_poly(int pf[D]) {
     int i;
-    printf("%d: ", pf[DEG]);
+    printf("%3d: ", pf[DEG]);
     for(i=0; i<pf[DEG]+1;i++) {
         printf("%d ", pf[i]);
     }
@@ -313,7 +345,7 @@ void true_degree(int pf[D]) {
     /* modify pf[DEG] so that it is the true degree */
     int i;
 
-    for(i=pf[DEG]; i>0; i--) {
+    for(i=pf[DEG]; i>=0; i--) {
         if(pf[i] != 0) {
             break;
         }
@@ -414,16 +446,21 @@ void mul_poly(int a, int pb[D], int pm[D]) {
 
 
 void prd_poly(int pa[D], int pb[D], int pp[D]) {
-
+    
     int i, j;
 
+    pp[DEG]=pa[DEG]+pb[DEG];
+
+    /* ensure that there are no numbers on pp */
+    for(i=0; i<pp[DEG]+1; i++) {
+        pp[i]=0;
+    }
+    
     for(i=0; i<pa[DEG]+1; i++) {
         for(j=0; j<pb[DEG]+1; j++) {
-            pp[i+j]=sum [pp[i+j]] [prd [pa[i]] [pb[j] ]];
+            pp[i+j]=sum [pp[i+j]] [prd [pa[i]] [pb[j]] ];
         } 
     }
-
-    pp[DEG]=pa[DEG]+pb[DEG];
 
     true_degree(pp);
 
@@ -432,9 +469,59 @@ void prd_poly(int pa[D], int pb[D], int pp[D]) {
 
 int div_poly(int pa[D], int pb[D], int pc[D], int pr[D]) {
 
+    int i, j;
+    int pcaux[D], praux[D];
 
+    /* set the remainder as if it was pa */
+    for(i=0; i<pa[DEG]+1; i++) {
+        pr[i]=pa[i];
+    }
+    pr[DEG]=pa[DEG];
+
+    /* set quotient to zero polynomial just in case an error occur */
+    pc[DEG]=X;
+
+    /* Handling possible division errors */
+    if(pb[DEG]>pa[DEG]) {
+        printf("Division error: Degree of denominator is bigger than degree of numerator!\n");
+        return 0;
+    }
+
+    if(pb[DEG]==-1) {
+        printf("Division error: Division by 0 polynomial!\n");
+        return 0;
+    }
+
+    if(inv[pb[pb[DEG]]]==X) {
+        printf("Division error: Leading term of denominator is not invertible!\n");
+        return 0;
+    }
+
+    /* Euclidean division */
+    /* find pc degree and set all their coefficients to 0*/
+    pc[DEG]=pa[DEG]-pb[DEG];
+    for(i=0; i<pc[DEG]+1; i++) {
+        pc[i]=0;
+    }
+
+    for(i=pc[DEG]; i>=0; i--) {
+
+        pc[i]=div [pr[pr[DEG]]] [pb[pb[DEG]]];
+        
+        /* get pc[i] as a monomyal and save it in pcaux */
+        for(j=0; j<=i; j++) {
+            pcaux[j]=pc[j];
+        }
+        pcaux[DEG]=i;
+
+        prd_poly(pcaux, pb, praux);
+        dif_poly(pr, praux, pr);
+
+    }
     
     true_degree(pc);
     true_degree(pr);
 
+    return 1;
 }
+
