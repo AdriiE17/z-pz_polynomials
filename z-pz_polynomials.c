@@ -1,20 +1,21 @@
 /*
-    program: CognomNom-Practica2.c (poly-zpz.c)
     Arithmetics of polynomials in Z/pZ
+    
     The program reads: p, two polynomials (a,b), and a number m
-    The maximum p is P_MAX= 100
-    A polinomial pf is an expression of the form
-    pf(x)= f0 + f1 x + f2 xˆ2 + ... + fn xˆn.
+    The maximum p is P_MAX=100
+    A polinomial pf is an expression of the form:
+        pf(x)= f0 + f1 x + f2 xˆ2 + ... + fn xˆn.
     The polynomial 0 has degree -1.
-    The maximum degree is N_MAX= 1000.
-    The n+1 coeffients are stored in a vector of size D= N_MAX+2.
-    The degree n is stored in the element indexed by DEG= N_MAX+1.
+    The maximum degree is N_MAX=1000.
+    The n+1 coeffients are stored in a vector of size D=N_MAX+2.
+    The degree n is stored in the element indexed by DEG=N_MAX+1.
+
     Input and output of a polynomial
-    For a polynomial of degree n, the input and output
-    are given in the form
-    n: a0 a1 a2 ... an
+    For a polynomial of degree n, the input and output are given in the form:
+        n: a0 a1 a2 ... an
+    
     Exemple: a(x)= x+ 3 xˆ2 is given by 2: 0 1 3
-    and stored as with a[0]= 0, a[1]= 1, a[2]= 3, a[DEG]= 2.
+    and stored as with a[0]=0, a[1]=1, a[2]=3, a[DEG]=2.
 */
 
 
