@@ -233,7 +233,7 @@ int main (void) {
 void zpz_arithmetics (int p) {
 
     int i, j;
-    int gcd;
+    int a0, a1, r, gcd;
 
     /* Sum table */
     for(i=0; i<p; i++) {
@@ -259,11 +259,16 @@ void zpz_arithmetics (int p) {
     inv[0]=X;
     for(i=1; i<p; i++) {
         
-        /* getting gcd with euclides algorithm */
-        gcd=i;
-        while(p%gcd!=0) {
-            gcd=p%gcd;
+        /* getting gcd with euclides' algorithm */
+        a0 = p;
+        a1 = i;
+        r = a0%a1;
+        while(r!=0) {
+            a0 = a1;
+            a1 = r;
+            r = a0%a1;
         }
+        gcd=a1;
 
         /* If gcd is not 1, then inverse does not exist */
         if(gcd!=1)  {
